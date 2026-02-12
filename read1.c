@@ -18,6 +18,19 @@ bool test_and_set(bool *target){
 	return returnValue;
 }
 
+bool lock;
+int main() {
+	do {
+		while (test_and_set(&lock));
+		//critical section
+		lock = false;
+		// remainder
+
+	}while(true);
+
+	return 0; 
+}
+
 
 void sigHandler (int sigNum)
 {
