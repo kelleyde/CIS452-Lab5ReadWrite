@@ -7,6 +7,7 @@
 #include <sys/ipc.h>
 #include <stdbool.h>
 #include <string.h>
+#include <signal.h>
 
 #define SIZEOFBLOCK 4096
 
@@ -23,7 +24,7 @@ int main(int argc, char *argv[]) {
     char input[100];
     do {
 	bool lock = false;
-	printf("Do you want to write to memory, yes or no");
+	printf("Do you want to write to memory, yes or no \t");
 	fgets(inputCheck, sizeof(inputCheck), stdin);
 	if(inputCheck == "yes"){
 		lock = true;
@@ -31,8 +32,11 @@ int main(int argc, char *argv[]) {
 	memcpy(blockAddr, &lock, SIZEOFBLOCK);
         while (test_and_set(&lock)) { } // do nothing
         /* critical section */
-	while(input != "exit"){
+	while(true){
 		fgets(input, sizeof(input), stdin);
+		if(input == "exit"){
+			break;
+		}
 		printf("%s", input);
 		strncpy(blockAddr, input, SIZEOFBLOCK);
 	}
@@ -41,7 +45,7 @@ int main(int argc, char *argv[]) {
     } while (true);
 
     shmdt(blockAddr);
-   // signal (SIGINT, sigHandler);
+    signal (SIGINT, sigHandler);
 
 }
 
@@ -52,11 +56,11 @@ bool returnValue = *target;
 return returnValue;
 }
 
-//void sigHandler (int sigNum)
-//{
- //   if(sigNum == SIGINT){
+void sigHandler (int sigNum)
+{
+    if(sigNum == SIGINT){
 	
-   //     printf ("Exit Gracefully\n");
-    //    exit(0);
-   // }
-//}
+        printf ("Exit Gracefully\n");
+        exit(0);
+    }
+}
